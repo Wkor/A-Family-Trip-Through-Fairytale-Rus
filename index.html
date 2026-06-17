@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Маршрут: Москва — Углич — Мышкин — Рыбинск (с АЗС Роснефть)</title>
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Leaflet Routing Machine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    <style>
+        /* ----- RESET & BASE ----- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', system-ui, sans-serif;
+            background: #1a1a2e;
+            color: #eee;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        /* ----- SIDEBAR (itinerary panel) ----- */
+        #sidebar {
+            position: fixed;
+            top: 16px;
+            left: 16px;
+            width: 340px;
+            max-height: calc(100vh - 32px);
+            background: rgba(20, 20, 40, 0.92);
+            backdrop-filter: blur(12px);
+            border-radius: 18px;
+            padding: 20px 0 16px 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+                opacity 0.3s ease;
+        }
+
+        #sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        #sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+        }
+
+        #sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px 14px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        #sidebar-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            background: linear-gradient(135deg, #f0e6b0, #f5c842);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        #sidebar-toggle {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: #ccc;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 8px;
+            transition: background 0.2s;
+            line-height: 1;
+        }
+        #sidebar-toggle:hover {
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .day-group {
+            padding: 12px 20px 8px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .day-group:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+        .day-group:last-of-type {
+            border-bottom: none;
+        }
+
+        .day-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 600;
+            font-size: 15px;
+            color: #ddd;
+        }
+
+        .day-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            color: #fff;
+            flex-shrink: 0;
+        }
+
+        .day-title {
+            font-weight: 500;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        .day-stops {
+            margin-top: 6px;
+            padding-left: 8px;
+            font-size: 13px;
+            color: #bbb;
+            line-height: 1.6;
+        }
+        .day-stops .stop {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 2px 0;
+        }
+        .day-stops .stop .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-right: 4px;
+        }
+        .day-stops .stop .name {
+            color: #eee;
+        }
+        .day-stops .stop .note {
+            color: #888;
+            font-size: 12px;
+        }
+
+        /* ----- COLLAPSED STATE ----- */
+        #sidebar.collapsed {
+            transform: translateX(-360px);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* toggle button when collapsed */
+        #sidebar-collapse-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background: rgba(20, 20, 40, 0.88);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #eee;
+            font-size: 22px;
+            padding: 8px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.25s ease;
+            display: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+        #sidebar-collapse-btn:hover {
+            background: rgba(40, 40, 70, 0.95);
+            transform: scale(1.04);
+        }
+        #sidebar.collapsed~#sidebar-collapse-btn {
+            display: block;
+        }
+
+        /* ----- LEGEND (map bottom-right) ----- */
+        #legend {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: rgba(16, 16, 32, 0.88);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            padding: 14px 18px;
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            z-index: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            font-size: 13px;
+            color: #ccc;
+            min-width: 140px;
+        }
+        #legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 3px 0;
+        }
+        #legend .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+        }
+        #legend .legend-label {
+            font-weight: 400;
+        }
+
+        /* ----- POPUP CUSTOMIZATION ----- */
+        .custom-popup .leaflet-popup-content-wrapper {
+            background: rgba(24, 24, 48, 0.95);
+            backdrop-filter: blur(6px);
+            border-radius: 14px;
+            color: #eee;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.6);
+        }
+        .custom-popup .leaflet-popup-tip {
+            background: rgba(24, 24, 48, 0.95);
+        }
+        .custom-popup .leaflet-popup-content {
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 6px 4px;
+            min-width: 220px;
+            max-width: 320px;
+        }
+        .popup-title {
+            font-weight: 700;
+            font-size: 17px;
+            margin-bottom: 4px;
+            color: #fff;
+        }
+        .popup-sub {
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+        .popup-desc {
+            color: #ccc;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .popup-desc .detail {
+            color: #bbb;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .popup-desc .highlight {
+            color: #f5c842;
+        }
+
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 290px;
+                left: 10px;
+                top: 10px;
+                max-height: calc(100vh - 20px);
+                padding: 14px 0 12px 0;
+                border-radius: 14px;
+            }
+            #sidebar-header h2 {
+                font-size: 15px;
+            }
+            .day-group {
+                padding: 8px 14px 6px 14px;
+            }
+            .day-header {
+                font-size: 13px;
+            }
+            .day-stops {
+                font-size: 12px;
+            }
+            #sidebar.collapsed {
+                transform: translateX(-310px);
+            }
+            #legend {
+                bottom: 14px;
+                right: 14px;
+                padding: 10px 14px;
+                font-size: 12px;
+                min-width: 110px;
+            }
+            #legend .legend-color {
+                width: 12px;
+                height: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #sidebar {
+                width: 250px;
+                left: 6px;
+                top: 6px;
+                max-height: calc(100vh - 12px);
+                padding: 10px 0 10px 0;
+                border-radius: 12px;
+            }
+            #sidebar-header {
+                padding: 0 14px 10px 14px;
+            }
+            #sidebar-header h2 {
+                font-size: 14px;
+            }
+            .day-group {
+                padding: 6px 12px 4px 12px;
+            }
+            .day-header {
+                font-size: 12px;
+                gap: 8px;
+            }
+            .day-stops {
+                font-size: 11px;
+            }
+            .day-badge {
+                font-size: 10px;
+                padding: 1px 8px;
+            }
+            #sidebar.collapsed {
+                transform: translateX(-270px);
+            }
+            #legend {
+                bottom: 10px;
+                right: 10px;
+                padding: 8px 12px;
+                font-size: 11px;
+                min-width: 90px;
+            }
+            #legend .legend-color {
+                width: 10px;
+                height: 10px;
+            }
+            .custom-popup .leaflet-popup-content {
+                font-size: 12px;
+                min-width: 160px;
+                max-width: 240px;
+            }
+            .popup-title {
+                font-size: 15px;
+            }
+        }
+
+        /* Routing machine overrides */
+        .leaflet-routing-container {
+            background: rgba(20, 20, 40, 0.85);
+            backdrop-filter: blur(6px);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #eee;
+            font-family: 'Segoe UI', sans-serif;
+            padding: 8px 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+        .leaflet-routing-container a {
+            color: #f5c842;
+        }
+        .leaflet-routing-container .leaflet-routing-alt {
+            background: transparent;
+            color: #ddd;
+            max-height: 200px;
+        }
+        .leaflet-routing-container .leaflet-routing-alt tr {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .leaflet-routing-container .leaflet-routing-alt td {
+            padding: 4px 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <div id="sidebar">
+        <div id="sidebar-header">
+            <h2>🗺️ Маршрут</h2>
+            <button id="sidebar-toggle" aria-label="Свернуть панель">✕</button>
+        </div>
+
+        <div id="sidebar-content">
+            <!-- Day 1 -->
+            <div class="day-group" data-day="1">
+                <div class="day-header">
+                    <span class="day-badge" style="background:#e74c3c;">День 1</span>
+                    <span class="day-title">Москва → Углич</span>
+                </div>
+                <div class="day-stops">
+                    <div class="stop"><span class="dot" style="background:#e74c3c;"></span><span class="name">Москва</span> <span class="note">— 8:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#e74c3c;"></span><span class="name">АЗС Роснефть (МКАД)</span> <span class="note">— заправка</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Угличский кремль</span> <span class="note">— 12:30–14:30</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Обед «ГОSТИ»</span> <span class="note">— 14:30–15:30</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Музей гидроэнергетики</span> <span class="note">— 15:30–16:30</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">АЗС Роснефть (Углич)</span> <span class="note">— заправка</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Отель «Вознесенская»</span> <span class="note">— заезд</span></div>
+                </div>
+            </div>
+
+            <!-- Day 2 -->
+            <div class="day-group" data-day="2">
+                <div class="day-header">
+                    <span class="day-badge" style="background:#f39c12;">День 2</span>
+                    <span class="day-title">Углич → Мышкин</span>
+                </div>
+                <div class="day-stops">
+                    <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Завтрак в отеле</span> <span class="note">— 8:00–9:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Эко-парк «Легенды Леса»</span> <span class="note">— 9:30–14:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Обед в парке</span> <span class="note">— 14:00–15:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Отель МЫШК ИНН</span> <span class="note">— заезд, ужин</span></div>
+                </div>
+            </div>
+
+            <!-- Day 3 -->
+            <div class="day-group" data-day="3">
+                <div class="day-header">
+                    <span class="day-badge" style="background:#2ecc71;">День 3</span>
+                    <span class="day-title">Мышкин</span>
+                </div>
+                <div class="day-stops">
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Завтрак в отеле</span> <span class="note">— 8:00–9:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей Мыши</span> <span class="note">— 10:00–11:30</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей столицы лоцманов</span> <span class="note">— 11:30–12:30</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Обед «Волжский фермер»</span> <span class="note">— 12:30–13:30</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Никольская площадь / Лавровая гора</span> <span class="note">— 13:30–15:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей крестьянской архитектуры</span> <span class="note">— 15:00–16:00</span></div>
+                </div>
+            </div>
+
+            <!-- Day 4 -->
+            <div class="day-group" data-day="4">
+                <div class="day-header">
+                    <span class="day-badge" style="background:#3498db;">День 4</span>
+                    <span class="day-title">Мышкин → Рыбинск</span>
+                </div>
+                <div class="day-stops">
+                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Завтрак в отеле</span> <span class="note">— 8:00–9:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Переезд в Рыбинск</span> <span class="note">— 9:00–10:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Рыбинск: набережная, ГЭС, собор</span> <span class="note">— 10:00–13:00</span></div>
+                </div>
+            </div>
+
+            <!-- Optional -->
+            <div class="day-group" data-day="opt" style="opacity:0.6;">
+                <div class="day-header">
+                    <span class="day-badge" style="background:#8e44ad;">Доп.</span>
+                    <span class="day-title">Музей мифов и суеверий (Углич)</span>
+                </div>
+                <div class="day-stops">
+                    <div class="stop"><span class="dot" style="background:#8e44ad;"></span><span class="name">ул. 9 Января, 40</span> <span class="note">— по записи</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Button to show sidebar when collapsed -->
+    <button id="sidebar-collapse-btn" aria-label="Показать панель">☰</button>
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <!-- LEGEND -->
+    <div id="legend">
+        <div class="legend-item"><span class="legend-color" style="background:#e74c3c;"></span><span class="legend-label">День 1</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:#f39c12;"></span><span class="legend-label">День 2</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:#2ecc71;"></span><span class="legend-label">День 3</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:#3498db;"></span><span class="legend-label">День 4</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:#8e44ad;"></span><span class="legend-label">Дополнительно</span></div>
+        <div class="legend-item"><span class="legend-color" style="background:#ff7800;"></span><span class="legend-label">АЗС Роснефть</span></div>
+        <div class="legend-item" style="margin-top:6px; border-top:1px solid rgba(255,255,255,0.06); padding-top:6px;">
+            <span style="display:inline-block; width:20px; height:4px; background:#ff3333; border-radius:2px;"></span>
+            <span class="legend-label">Маршрут (по дорогам)</span>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js">
+    </script>
+    <!-- Leaflet Routing Machine -->
+    <script src="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.js">
+    </script>
+
+    <script>
+        // ============================================================
+        //  DATA — all points of interest (including gas stations)
+        // ============================================================
+        const locations = [{
+            id: 'moscow',
+            name: 'Москва',
+            lat: 55.7558,
+            lng: 37.6173,
+            day: 1,
+            color: '#e74c3c',
+            icon: '🚗',
+            title: 'Москва',
+            sub: 'Старт',
+            desc: 'Отправление в <span class="highlight">8:00</span>',
+            details: 'Начало путешествия'
+        }, {
+            // Gas station on MKAD (near Yaroslavl highway)
+            id: 'gas-moscow',
+            name: 'АЗС Роснефть (МКАД)',
+            lat: 55.8725,
+            lng: 37.7590,
+            day: 1,
+            color: '#ff7800',
+            icon: '⛽',
+            title: 'АЗС Роснефть №1',
+            sub: 'МКАД, 94-й км, внешняя сторона',
+            desc: 'Круглосуточно<br>Оплата картой, туалет, кафе',
+            details: 'Удобная заправка на выезде из Москвы.'
+        }, {
+            id: 'gas-sergiev-posad',
+            name: 'АЗС Роснефть (Сергиев Посад)',
+            lat: 56.3025,
+            lng: 38.1280,
+            day: 1,
+            color: '#ff7800',
+            icon: '⛽',
+            title: 'АЗС Роснефть №2',
+            sub: 'Ярославское шоссе, 115-й км',
+            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            details: 'На трассе М8, перед Сергиевым Посадом.'
+        }, {
+            id: 'gas-pereslavl',
+            name: 'АЗС Роснефть (Переславль-Залесский)',
+            lat: 56.7200,
+            lng: 38.8600,
+            day: 1,
+            color: '#ff7800',
+            icon: '⛽',
+            title: 'АЗС Роснефть №3',
+            sub: 'Ярославское шоссе, 154-й км',
+            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            details: 'На трассе М8, в районе Переславля.'
+        }, {
+            id: 'gas-rostov',
+            name: 'АЗС Роснефть (Ростов Великий)',
+            lat: 57.1730,
+            lng: 39.4250,
+            day: 1,
+            color: '#ff7800',
+            icon: '⛽',
+            title: 'АЗС Роснефть №4',
+            sub: 'Ярославское шоссе, 207-й км',
+            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            details: 'На трассе М8, перед Ростовом.'
+        }, {
+            id: 'gas-uglich',
+            name: 'АЗС Роснефть (Углич)',
+            lat: 57.5240,
+            lng: 38.3100,
+            day: 1,
+            color: '#ff7800',
+            icon: '⛽',
+            title: 'АЗС Роснефть №69',
+            sub: 'Ростовское шоссе, 14, Углич',
+            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            details: 'На въезде в Углич.'
+        }, {
+            id: 'uglich-stolovaya',
+            name: 'Столовая №1',
+            lat: 57.5275,
+            lng: 38.3167,
+            day: 1,
+            color: '#e67e22',
+            icon: '🍽️',
+            title: 'Второй завтрак',
+            sub: 'Углич, ул. Ленина, 11',
+            desc: 'Средний чек 250–300 ₽<br>Режим: 9:00 – 18:00',
+            details: 'Столовая 1'
+        }, {
+            id: 'uglich-kremlin',
+            name: 'Угличский кремль',
+            lat: 57.5278,
+            lng: 38.3172,
+            day: 1,
+            color: '#e67e22',
+            icon: '🏛️',
+            title: 'Угличский кремль',
+            sub: 'ул. Кремль',
+            desc: 'Единый билет во все музеи — 300 ₽<br>Режим: 9:00 – 22:00<br><span class="highlight">12:30–14:30</span>',
+            details: 'Спасо-Преображенский собор — образец ярославского зодчества. Советуем подняться на колокольню: живописная панорама, можно ударить в колокол и посмотреть на механизм башенных часов.'
+        }, {
+            id: 'uglich-gosti',
+            name: 'Ресторан «ГОSТИ»',
+            lat: 57.5272,
+            lng: 38.3160,
+            day: 1,
+            color: '#e67e22',
+            icon: '🍴',
+            title: 'Обед «ГОSТИ»',
+            sub: 'ул. Ярославская, 4',
+            desc: 'Средний чек 700 ₽<br>Режим: 9:30 – 23:00<br><span class="highlight">14:30–15:30</span>',
+            details: 'Семейный ресторан'
+        }, {
+            id: 'uglich-hydro',
+            name: 'Музей гидроэнергетики',
+            lat: 57.5270,
+            lng: 38.3180,
+            day: 1,
+            color: '#e67e22',
+            icon: '⚡',
+            title: 'Музей гидроэнергетики',
+            sub: 'ул. Спасская, 33',
+            desc: 'Интерактивная экскурсия — 650 ₽<br>Режим: 9:00 – 18:00<br><span class="highlight">15:30–16:30</span>',
+            details: 'Угличская ГЭС — одна из старейших в России. Во дворе — 120-тонное рабочее колесо, можно рассмотреть и потрогать бесплатно.'
+        }, {
+            id: 'uglich-hotel',
+            name: 'Отель «Вознесенская»',
+            lat: 57.5277,
+            lng: 38.3150,
+            day: 1,
+            color: '#e67e22',
+            icon: '🏨',
+            title: 'Отель «Вознесенская»',
+            sub: 'ул. Ольги Берггольц, 5',
+            desc: 'Номер на двоих — 4 800 ₽<br>Центр, парковка, завтрак',
+            details: 'Тел. +7 (48532) 5-73-73'
+        }, {
+            id: 'ecopark',
+            name: 'Эко-парк «Легенды Леса»',
+            lat: 57.4833,
+            lng: 38.4167,
+            day: 2,
+            color: '#f39c12',
+            icon: '🌲',
+            title: 'Эко-парк «Легенды Леса»',
+            sub: 'д. Покровские Горки, ул. Счастья, 11',
+            desc: 'Бесплатный Wi‑Fi, вся инфраструктура<br>Конные прогулки, квадроциклы, катамараны<br><span class="highlight">9:30–14:00</span>',
+            details: 'Ферма с животными, спортивные площадки, зона барбекю, беседки, баня с прудом, ресторан фермерской кухни. Обед — шашлыки на мангале или пикник.'
+        }, {
+            id: 'myshkin-hotel',
+            name: 'Отель МЫШК ИНН',
+            lat: 57.7833,
+            lng: 38.4500,
+            day: 2,
+            color: '#2ecc71',
+            icon: '🏨',
+            title: 'Отель МЫШК ИНН',
+            sub: 'Угличская, 7, Мышкин',
+            desc: 'Уютный отель в центре<br>Ужин включён',
+            details: 'Атмосфера тихой провинции. Набережная, уникальные музеи.'
+        }, {
+            id: 'myshkin-mouse',
+            name: 'Музей Мыши',
+            lat: 57.7835,
+            lng: 38.4505,
+            day: 3,
+            color: '#2ecc71',
+            icon: '🐭',
+            title: 'Музей Мыши',
+            sub: 'Никольская площадь, 1/18',
+            desc: 'Единственный в мире музей мыши<br>Режим: 10:00 – 17:00, выходной — понедельник<br><span class="highlight">10:00–11:30</span>',
+            details: 'Тысячи экспонатов: игрушки, фигурки из Японии, Индии, Франции, мыши-герои мультфильмов. «Канцелярия мышиного короля». Можно принести свою мышь в подарок — выдадут свидетельство дарителя.'
+        }, {
+            id: 'myshkin-pilots',
+            name: 'Музей столицы лоцманов',
+            lat: 57.7830,
+            lng: 38.4495,
+            day: 3,
+            color: '#2ecc71',
+            icon: '⚓',
+            title: 'Музей столицы лоцманов',
+            sub: 'Никольская площадь, 1',
+            desc: 'История мышкинских лоцманов<br>Быт и купеческие династии XIX века<br><span class="highlight">11:30–12:30</span>',
+            details: 'Старинные якоря, рулевые колёса, рынды, антикварная мебель, личные вещи известных людей.'
+        }, {
+            id: 'myshkin-fermer',
+            name: 'Обед «Волжский фермер»',
+            lat: 57.7832,
+            lng: 38.4498,
+            day: 3,
+            color: '#2ecc71',
+            icon: '🥩',
+            title: 'Обед «Волжский фермер»',
+            sub: 'Никольская, 9',
+            desc: 'Средний чек 500 ₽<br>Режим: 9:00 – 19:00<br><span class="highlight">12:30–13:30</span>',
+            details: 'Прогулка по Никольской площади и набережной.'
+        }, {
+            id: 'myshkin-square',
+            name: 'Никольская площадь / Лавровая гора',
+            lat: 57.7838,
+            lng: 38.4510,
+            day: 3,
+            color: '#2ecc71',
+            icon: '⛰️',
+            title: 'Никольская площадь & Лавровая гора',
+            sub: 'Набережная Волги',
+            desc: 'Большая смотровая зона вдоль Волги<br>Подъём на Лавровую гору — потрясающие виды<br><span class="highlight">13:30–15:00</span>',
+            details: 'Прогулка по Никольской площади и прилегающим улицам. Смотровая площадка «Лавровая гора» — подъём несложный, виды великолепные.'
+        }, {
+            id: 'myshkin-arch',
+            name: 'Музей крестьянской архитектуры',
+            lat: 57.7840,
+            lng: 38.4520,
+            day: 3,
+            color: '#2ecc71',
+            icon: '🏚️',
+            title: 'Музей малых форм крестьянской архитектуры',
+            sub: 'ул. Угличская, 21',
+            desc: 'Музей под открытым небом<br>Ремесленная слободка — мастер-классы<br><span class="highlight">15:00–16:00</span>',
+            details: 'Коллекция деревянных построек: амбары, избы, мельницы. Можно зайти внутрь. В Ремесленной слободке — мастер-классы.'
+        }, {
+            id: 'rybinsk',
+            name: 'Рыбинск',
+            lat: 58.0500,
+            lng: 38.8333,
+            day: 4,
+            color: '#3498db',
+            icon: '🏙️',
+            title: 'Рыбинск',
+            sub: 'Волжская набережная',
+            desc: 'Пожарная каланча, Рыбинская ГЭС,<br>Спасо-Преображенский кафедральный собор<br><span class="highlight">10:00–13:00</span>',
+            details: 'Прогулка по Волжской набережной. Посещение пожарной каланчи, Рыбинской ГЭС и Спасо-Преображенского собора.'
+        }, {
+            id: 'uglich-myths',
+            name: 'Музей мифов и суеверий',
+            lat: 57.5273,
+            lng: 38.3175,
+            day: 'opt',
+            color: '#8e44ad',
+            icon: '🧙',
+            title: 'Музей мифов и суеверий русского народа',
+            sub: 'ул. 9 Января, 40, Углич',
+            desc: 'По предварительной записи — 300 ₽<br>Режим: 12:00 – 17:00',
+            details: 'Дополнительное место при наличии времени и желания.'
+        }];
+
+        // ============================================================
+        //  ROUTE — waypoints in order (major stops)
+        // ============================================================
+        const waypoints = [
+            L.latLng(55.7558, 37.6173), // Москва
+            L.latLng(57.5275, 38.3167), // Углич
+            L.latLng(57.4833, 38.4167), // Эко-парк
+            L.latLng(57.7833, 38.4500), // Мышкин
+            L.latLng(58.0500, 38.8333), // Рыбинск
+        ];
+
+        // ============================================================
+        //  INIT MAP (без атрибуции)
+        // ============================================================
+        const map = L.map('map', {
+            center: [57.2, 38.0],
+            zoom: 7,
+            zoomControl: false,
+            attributionControl: false, // убираем надпись Leaflet / OSM
+        });
+
+        L.control.zoom({ position: 'bottomleft' }).addTo(map);
+
+        // Tile layer (без атрибуции)
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+        }).addTo(map);
+
+        // ============================================================
+        //  CUSTOM ICONS
+        // ============================================================
+        function createIcon(color, emoji) {
+            const svg = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 42 42">
+              <circle cx="21" cy="21" r="18" fill="${color}" stroke="#fff" stroke-width="2.5" />
+              <text x="21" y="26" font-size="18" text-anchor="middle" fill="#fff" font-family="sans-serif">${emoji || '📍'}</text>
+            </svg>
+          `;
+            return L.divIcon({
+                html: svg,
+                className: '',
+                iconSize: [42, 42],
+                iconAnchor: [21, 42],
+                popupAnchor: [0, -38],
+            });
+        }
+
+        // ============================================================
+        //  ADD MARKERS
+        // ============================================================
+        const markers = [];
+
+        locations.forEach((loc) => {
+            const icon = createIcon(loc.color, loc.icon || '📍');
+            const marker = L.marker([loc.lat, loc.lng], { icon })
+                .addTo(map)
+                .bindPopup(`
+              <div style="min-width:200px;">
+                <div class="popup-title">${loc.title}</div>
+                <div class="popup-sub">${loc.sub}</div>
+                <div class="popup-desc">
+                  ${loc.desc}
+                  ${loc.details ? `<div class="detail" style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.08);">${loc.details}</div>` : ''}
+                </div>
+              </div>
+            `, { className: 'custom-popup' });
+
+            markers.push({ marker, data: loc });
+        });
+
+        // ============================================================
+        //  ROUTING MACHINE (по дорогам) — ярко-красный маршрут
+        // ============================================================
+        const routingControl = L.Routing.control({
+            waypoints: waypoints,
+            routeWhileDragging: false,
+            showAlternatives: false,
+            collapsible: true,
+            position: 'bottomleft',
+            lineOptions: {
+                styles: [
+                    { color: '#ff3333', weight: 6, opacity: 0.95 } // ярко-красный, толстый
+                ],
+                extendToWaypoints: true,
+                missingRouteTolerance: 0,
+            },
+            altLineOptions: {
+                styles: [
+                    { color: 'black', weight: 3, opacity: 0.2 }
+                ]
+            },
+            router: L.Routing.osrmv1({
+                serviceUrl: 'https://router.project-osrm.org/route/v1',
+                profile: 'driving',
+            }),
+            formatter: new L.Routing.Formatter({
+                units: 'metric',
+                roundingSensitivity: 5,
+                language: 'ru',
+            }),
+            plan: new L.Routing.Plan(waypoints, {
+                createMarker: function(i, wp, n) {
+                    return L.marker(wp.latLng, { draggable: false });
+                },
+                totalWaypoints: 5,
+            }),
+        }).addTo(map);
+
+        // ============================================================
+        //  SIDEBAR INTERACTION
+        // ============================================================
+        const sidebar = document.getElementById('sidebar');
+        const toggleBtn = document.getElementById('sidebar-toggle');
+        const collapseBtn = document.getElementById('sidebar-collapse-btn');
+
+        document.querySelectorAll('.day-group').forEach((group) => {
+            group.addEventListener('click', () => {
+                const day = group.dataset.day;
+                const dayMarkers = markers.filter(m => String(m.data.day) === day);
+                if (dayMarkers.length === 0) return;
+                const bounds = L.latLngBounds(dayMarkers.map(m => [m.data.lat, m.data.lng]));
+                map.fitBounds(bounds, { padding: [60, 60], maxZoom: 12 });
+                if (dayMarkers.length > 0) {
+                    dayMarkers[0].marker.openPopup();
+                }
+            });
+        });
+
+        toggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+        });
+
+        collapseBtn.addEventListener('click', () => {
+            sidebar.classList.remove('collapsed');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 768) {
+                const isSidebar = sidebar.contains(e.target);
+                const isCollapseBtn = collapseBtn.contains(e.target);
+                if (!isSidebar && !isCollapseBtn && !sidebar.classList.contains('collapsed')) {
+                    sidebar.classList.add('collapsed');
+                }
+            }
+        });
+
+        // ============================================================
+        //  FIT MAP TO ALL MARKERS (после загрузки маршрута)
+        // ============================================================
+        setTimeout(() => {
+            const allBounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]));
+            map.fitBounds(allBounds, { padding: [80, 80], maxZoom: 9 });
+        }, 1000);
+
+        // ============================================================
+        //  ESC to close sidebar
+        // ============================================================
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !sidebar.classList.contains('collapsed')) {
+                sidebar.classList.add('collapsed');
+            }
+        });
+
+        console.log('🗺️ Маршрут построен по дорогам через OSRM, цвет ярко-красный.');
+        console.log('⛽ Добавлены АЗС Роснефть вдоль трассы (МКАД, Сергиев Посад, Переславль, Ростов, Углич).');
+        console.log('🔹 Атрибуция Leaflet/OSM скрыта.');
+    </script>
+
+</body>
+</html>
