@@ -9,7 +9,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Leaflet Routing Machine CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
+    
     <style>
+        
         /* ----- RESET & BASE ----- */
         * {
             margin: 0;
@@ -388,6 +390,8 @@
         .leaflet-routing-container .leaflet-routing-alt td {
             padding: 4px 6px;
         }
+        
+        
     </style>
 </head>
 <body>
@@ -872,17 +876,18 @@
         //  INIT MAP (без атрибуции)
         // ============================================================
         const map = L.map('map', {
-            center: [57.2, 38.0],
-            zoom: 7,
-            zoomControl: false,
-            attributionControl: false,
-        });
+        center: [57.2, 38.0],
+        zoom: 7,
+        zoomControl: false,
+        // attributionControl: true  // можно включить, а можно оставить false, если ставите свою подпись
+    });
 
-        L.control.zoom({ position: 'bottomleft' }).addTo(map);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 18,
-        }).addTo(map);
+    // Самый надёжный вариант — через Fastly CDN
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 19
+}).addTo(map);
 
         // ============================================================
         //  CUSTOM ICONS
