@@ -9,9 +9,9 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <!-- Leaflet Routing Machine CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@3.2.12/dist/leaflet-routing-machine.css" />
-    
+
     <style>
-        
+
         /* ----- RESET & BASE ----- */
         * {
             margin: 0;
@@ -163,6 +163,11 @@
             color: #888;
             font-size: 12px;
         }
+        .day-stops .stop .note-hours {
+            color: #f5c842;
+            font-size: 12px;
+            font-weight: 500;
+        }
 
         /* ----- COLLAPSED STATE ----- */
         #sidebar.collapsed {
@@ -272,6 +277,10 @@
         }
         .popup-desc .highlight {
             color: #f5c842;
+        }
+        .popup-desc .hours-label {
+            color: #f5c842;
+            font-weight: 500;
         }
 
         /* ----- RESPONSIVE ----- */
@@ -390,8 +399,8 @@
         .leaflet-routing-container .leaflet-routing-alt td {
             padding: 4px 6px;
         }
-        
-        
+
+
     </style>
 </head>
 <body>
@@ -411,13 +420,13 @@
                     <span class="day-title">Москва → Углич</span>
                 </div>
                 <div class="day-stops">
-                    <div class="stop"><span class="dot" style="background:#e74c3c;"></span><span class="name">Москва</span> <span class="note">— 8:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#e74c3c;"></span><span class="name">АЗС Роснефть (МКАД)</span> <span class="note">— заправка</span></div>
-                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Столовая №1 (второй завтрак)</span> <span class="note">— ~12:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Угличский кремль</span> <span class="note">— 12:30–14:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Обед «ГОSТИ»</span> <span class="note">— 14:30–15:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Музей гидроэнергетики</span> <span class="note">— 15:30–16:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">АЗС Роснефть (Углич)</span> <span class="note">— заправка</span></div>
+                    <div class="stop"><span class="dot" style="background:#e74c3c;"></span><span class="name">Москва</span> <span class="note">— старт</span></div>
+                    <div class="stop"><span class="dot" style="background:#ff7800;"></span><span class="name">АЗС Роснефть (МКАД)</span> <span class="note">— ⛽ 24/7</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Столовая №1</span> <span class="note-hours">— 🕘 9:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Угличский кремль</span> <span class="note-hours">— 🕘 9:00–22:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Ресторан «ГОSТИ»</span> <span class="note-hours">— 🕘 9:30–23:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Музей гидроэнергетики</span> <span class="note-hours">— 🕘 9:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#ff7800;"></span><span class="name">АЗС Роснефть (Углич)</span> <span class="note">— ⛽ 24/7</span></div>
                     <div class="stop"><span class="dot" style="background:#e67e22;"></span><span class="name">Отель «Вознесенская»</span> <span class="note">— заезд</span></div>
                 </div>
             </div>
@@ -430,8 +439,8 @@
                 </div>
                 <div class="day-stops">
                     <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Завтрак в отеле</span> <span class="note">— 8:00–9:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Эко-парк «Легенды Леса»</span> <span class="note">— 9:30–14:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Обед в парке</span> <span class="note">— 14:00–15:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Эко-парк «Легенды Леса»</span> <span class="note-hours">— 🕘 9:00–20:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#f39c12;"></span><span class="name">Обед в парке</span> <span class="note-hours">— 🕘 11:00–19:00</span></div>
                     <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Отель МЫШК ИНН</span> <span class="note">— заезд, ужин</span></div>
                 </div>
             </div>
@@ -444,12 +453,12 @@
                 </div>
                 <div class="day-stops">
                     <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Завтрак в отеле</span> <span class="note">— 8:00–9:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей Мыши</span> <span class="note">— 10:00–11:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей столицы лоцманов</span> <span class="note">— 11:30–12:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Обед «Волжский фермер»</span> <span class="note">— 12:30–13:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Никольская площадь / Лавровая гора</span> <span class="note">— 13:30–15:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей крестьянской архитектуры</span> <span class="note">— 15:00–16:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Ужин в отеле</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей Мыши</span> <span class="note-hours">— 🕘 10:00–17:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей столицы лоцманов</span> <span class="note-hours">— 🕘 10:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Обед «Волжский фермер»</span> <span class="note-hours">— 🕘 9:00–19:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Никольская площадь / Лавровая гора</span> <span class="note">— круглосуточно</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Музей крестьянской архитектуры</span> <span class="note-hours">— 🕘 10:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#2ecc71;"></span><span class="name">Ужин в отеле</span> <span class="note">— 19:00–20:30</span></div>
                 </div>
             </div>
 
@@ -462,11 +471,11 @@
                 <div class="day-stops">
                     <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Завтрак в отеле</span> <span class="note">— 8:00–9:00</span></div>
                     <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Переезд в Рыбинск</span> <span class="note">— 9:00–10:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Волжская набережная + Пожарная каланча + Собор</span> <span class="note">— 10:00–12:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Обед кафе «Волга»</span> <span class="note">— 12:30–13:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Рыбинская ГЭС</span> <span class="note">— 13:30–14:30</span></div>
-                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">АЗС Роснефть (Рыбинск)</span> <span class="note">— заправка</span></div>
-                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Отель в Рыбинске (опционально)</span></div>
+                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Волжская набережная + Каланча + Собор</span> <span class="note">— круглосуточно</span></div>
+                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Кафе «Волга»</span> <span class="note-hours">— 🕘 10:00–22:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Рыбинская ГЭС</span> <span class="note-hours">— 🕘 9:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#ff7800;"></span><span class="name">АЗС Роснефть (Рыбинск)</span> <span class="note">— ⛽ 24/7</span></div>
+                    <div class="stop"><span class="dot" style="background:#3498db;"></span><span class="name">Отель в Рыбинске</span> <span class="note">— опционально</span></div>
                 </div>
             </div>
 
@@ -474,15 +483,16 @@
             <div class="day-group" data-day="5">
                 <div class="day-header">
                     <span class="day-badge" style="background:#9b59b6;">День 5</span>
-                    <span class="day-title">Рыбинск → Ярославль (через Тыгыдым и Вятское)</span>
+                    <span class="day-title">Рыбинск → Ярославль (через Вятское)</span>
                 </div>
                 <div class="day-stops">
-                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Завтрак</span> <span class="note">— 8:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Этно-парк «Деревня Тыгыдым»</span> <span class="note">— 9:30–12:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Село Вятское (музей, обед)</span> <span class="note">— 12:30–15:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Ярославль: Спасо-Преображенский монастырь, набережная, планетарий</span> <span class="note">— 16:00–19:00</span></div>
-                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">АЗС Роснефть (Ярославль)</span> <span class="note">— заправка</span></div>
-                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Ночёвка в Ярославле / Вятском</span></div>
+                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Завтрак</span> <span class="note">— 8:00–9:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Этно-парк «Деревня Тыгыдым»</span> <span class="note-hours">— 🕘 11:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Село Вятское (музейный комплекс)</span> <span class="note-hours">— 🕘 10:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Ярославль: Спасо-Преображенский монастырь</span> <span class="note-hours">— 🕘 10:00–18:00</span></div>
+                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Набережная / Планетарий</span> <span class="note">— круглосуточно</span></div>
+                    <div class="stop"><span class="dot" style="background:#ff7800;"></span><span class="name">АЗС Роснефть (Ярославль)</span> <span class="note">— ⛽ 24/7</span></div>
+                    <div class="stop"><span class="dot" style="background:#9b59b6;"></span><span class="name">Ночёвка в Ярославле / Вятском</span> <span class="note">— по выбору</span></div>
                 </div>
             </div>
 
@@ -493,7 +503,7 @@
                     <span class="day-title">Музей мифов и суеверий (Углич)</span>
                 </div>
                 <div class="day-stops">
-                    <div class="stop"><span class="dot" style="background:#8e44ad;"></span><span class="name">ул. 9 Января, 40</span> <span class="note">— по записи</span></div>
+                    <div class="stop"><span class="dot" style="background:#8e44ad;"></span><span class="name">ул. 9 Января, 40</span> <span class="note-hours">— 🕘 12:00–17:00</span></div>
                 </div>
             </div>
         </div>
@@ -529,7 +539,7 @@
 
     <script>
         // ============================================================
-        //  DATA — all points of interest (including gas stations)
+        //  DATA — all points of interest (working hours only, no visit times)
         // ============================================================
         const locations = [{
             id: 'moscow',
@@ -541,8 +551,8 @@
             icon: '🚗',
             title: 'Москва',
             sub: 'Старт',
-            desc: 'Отправление в <span class="highlight">8:00</span>',
-            details: 'Начало путешествия'
+            desc: 'Начало путешествия',
+            details: ''
         }, {
             id: 'gas-moscow',
             name: 'АЗС Роснефть (МКАД)',
@@ -553,7 +563,7 @@
             icon: '⛽',
             title: 'АЗС Роснефть №1',
             sub: 'МКАД, 94-й км, внешняя сторона',
-            desc: 'Круглосуточно<br>Оплата картой, туалет, кафе',
+            desc: '⛽ <span class="hours-label">Круглосуточно</span><br>Оплата картой, туалет, кафе',
             details: 'Удобная заправка на выезде из Москвы.'
         }, {
             id: 'gas-sergiev-posad',
@@ -565,7 +575,7 @@
             icon: '⛽',
             title: 'АЗС Роснефть №2',
             sub: 'Ярославское шоссе, 115-й км',
-            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            desc: '⛽ <span class="hours-label">Круглосуточно</span><br>Топливо: 98, 95, 92, ДТ',
             details: 'На трассе М8, перед Сергиевым Посадом.'
         }, {
             id: 'gas-pereslavl',
@@ -577,7 +587,7 @@
             icon: '⛽',
             title: 'АЗС Роснефть №3',
             sub: 'Ярославское шоссе, 154-й км',
-            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            desc: '⛽ <span class="hours-label">Круглосуточно</span><br>Топливо: 98, 95, 92, ДТ',
             details: 'На трассе М8, в районе Переславля.'
         }, {
             id: 'gas-rostov',
@@ -589,7 +599,7 @@
             icon: '⛽',
             title: 'АЗС Роснефть №4',
             sub: 'Ярославское шоссе, 207-й км',
-            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            desc: '⛽ <span class="hours-label">Круглосуточно</span><br>Топливо: 98, 95, 92, ДТ',
             details: 'На трассе М8, перед Ростовом.'
         }, {
             id: 'gas-uglich',
@@ -601,7 +611,7 @@
             icon: '⛽',
             title: 'АЗС Роснефть №69',
             sub: 'Ростовское шоссе, 14, Углич',
-            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            desc: '⛽ <span class="hours-label">Круглосуточно</span><br>Топливо: 98, 95, 92, ДТ',
             details: 'На въезде в Углич.'
         }, {
             id: 'uglich-stolovaya',
@@ -611,9 +621,9 @@
             day: 1,
             color: '#e67e22',
             icon: '🍽️',
-            title: 'Второй завтрак',
+            title: 'Столовая №1',
             sub: 'Углич, ул. Ленина, 11',
-            desc: 'Средний чек 250–300 ₽<br>Режим: 9:00 – 18:00<br><span class="highlight">~12:30</span>',
+            desc: '🍽️ Средний чек 250–300 ₽<br><span class="hours-label">🕘 9:00 – 18:00</span>',
             details: 'Столовая 1'
         }, {
             id: 'uglich-kremlin',
@@ -625,7 +635,7 @@
             icon: '🏛️',
             title: 'Угличский кремль',
             sub: 'ул. Кремль',
-            desc: 'Единый билет во все музеи — 300 ₽<br>Режим: 9:00 – 22:00<br><span class="highlight">12:30–14:30</span>',
+            desc: '🏛️ Единый билет во все музеи — 300 ₽<br><span class="hours-label">🕘 9:00 – 22:00</span>',
             details: 'Спасо-Преображенский собор — образец ярославского зодчества. Советуем подняться на колокольню: живописная панорама, можно ударить в колокол и посмотреть на механизм башенных часов.'
         }, {
             id: 'uglich-gosti',
@@ -635,9 +645,9 @@
             day: 1,
             color: '#e67e22',
             icon: '🍴',
-            title: 'Обед «ГОSТИ»',
+            title: 'Ресторан «ГОSТИ»',
             sub: 'ул. Ярославская, 4',
-            desc: 'Средний чек 700 ₽<br>Режим: 9:30 – 23:00<br><span class="highlight">14:30–15:30</span>',
+            desc: '🍴 Средний чек 700 ₽<br><span class="hours-label">🕘 9:30 – 23:00</span>',
             details: 'Семейный ресторан'
         }, {
             id: 'uglich-hydro',
@@ -649,7 +659,7 @@
             icon: '⚡',
             title: 'Музей гидроэнергетики',
             sub: 'ул. Спасская, 33',
-            desc: 'Интерактивная экскурсия — 650 ₽<br>Режим: 9:00 – 18:00<br><span class="highlight">15:30–16:30</span>',
+            desc: '⚡ Интерактивная экскурсия — 650 ₽<br><span class="hours-label">🕘 9:00 – 18:00</span>',
             details: 'Угличская ГЭС — одна из старейших в России. Во дворе — 120-тонное рабочее колесо, можно рассмотреть и потрогать бесплатно.'
         }, {
             id: 'uglich-hotel',
@@ -661,7 +671,7 @@
             icon: '🏨',
             title: 'Отель «Вознесенская»',
             sub: 'ул. Ольги Берггольц, 5',
-            desc: 'Номер на двоих — 4 800 ₽<br>Центр, парковка, завтрак',
+            desc: '🏨 Номер на двоих — 4 800 ₽<br>Центр, парковка, завтрак',
             details: 'Тел. +7 (48532) 5-73-73'
         }, {
             id: 'ecopark',
@@ -673,8 +683,8 @@
             icon: '🌲',
             title: 'Эко-парк «Легенды Леса»',
             sub: 'д. Покровские Горки, ул. Счастья, 11',
-            desc: 'Бесплатный Wi‑Fi, вся инфраструктура<br>Конные прогулки, квадроциклы, катамараны<br><span class="highlight">9:30–14:00</span>',
-            details: 'Ферма с животными, спортивные площадки, зона барбекю, беседки, баня с прудом, ресторан фермерской кухни. Обед — шашлыки на мангале или пикник.'
+            desc: '🌲 Бесплатный Wi‑Fi, вся инфраструктура<br>Конные прогулки, квадроциклы, катамараны<br><span class="hours-label">🕘 9:00 – 20:00</span>',
+            details: 'Ферма с животными, спортивные площадки, зона барбекю, беседки, баня с прудом, ресторан фермерской кухни.'
         }, {
             id: 'myshkin-hotel',
             name: 'Отель МЫШК ИНН',
@@ -685,7 +695,7 @@
             icon: '🏨',
             title: 'Отель МЫШК ИНН',
             sub: 'Угличская, 7, Мышкин',
-            desc: 'Уютный отель в центре<br>Ужин включён',
+            desc: '🏨 Уютный отель в центре<br>Ужин включён',
             details: 'Атмосфера тихой провинции. Набережная, уникальные музеи.'
         }, {
             id: 'myshkin-mouse',
@@ -697,7 +707,7 @@
             icon: '🐭',
             title: 'Музей Мыши',
             sub: 'Никольская площадь, 1/18',
-            desc: 'Единственный в мире музей мыши<br>Режим: 10:00 – 17:00, выходной — понедельник<br><span class="highlight">10:00–11:30</span>',
+            desc: '🐭 Единственный в мире музей мыши<br><span class="hours-label">🕘 10:00 – 17:00</span><br>Выходной — понедельник',
             details: 'Тысячи экспонатов: игрушки, фигурки из Японии, Индии, Франции, мыши-герои мультфильмов. «Канцелярия мышиного короля». Можно принести свою мышь в подарок — выдадут свидетельство дарителя.'
         }, {
             id: 'myshkin-pilots',
@@ -709,7 +719,7 @@
             icon: '⚓',
             title: 'Музей столицы лоцманов',
             sub: 'Никольская площадь, 1',
-            desc: 'История мышкинских лоцманов<br>Быт и купеческие династии XIX века<br><span class="highlight">11:30–12:30</span>',
+            desc: '⚓ История мышкинских лоцманов<br>Быт и купеческие династии XIX века<br><span class="hours-label">🕘 10:00 – 18:00</span>',
             details: 'Старинные якоря, рулевые колёса, рынды, антикварная мебель, личные вещи известных людей.'
         }, {
             id: 'myshkin-fermer',
@@ -721,7 +731,7 @@
             icon: '🥩',
             title: 'Обед «Волжский фермер»',
             sub: 'Никольская, 9',
-            desc: 'Средний чек 500 ₽<br>Режим: 9:00 – 19:00<br><span class="highlight">12:30–13:30</span>',
+            desc: '🥩 Средний чек 500 ₽<br><span class="hours-label">🕘 9:00 – 19:00</span>',
             details: 'Прогулка по Никольской площади и набережной.'
         }, {
             id: 'myshkin-square',
@@ -733,7 +743,7 @@
             icon: '⛰️',
             title: 'Никольская площадь & Лавровая гора',
             sub: 'Набережная Волги',
-            desc: 'Большая смотровая зона вдоль Волги<br>Подъём на Лавровую гору — потрясающие виды<br><span class="highlight">13:30–15:00</span>',
+            desc: '⛰️ Большая смотровая зона вдоль Волги<br>Подъём на Лавровую гору — потрясающие виды<br><span class="hours-label">🕘 Круглосуточно</span>',
             details: 'Прогулка по Никольской площади и прилегающим улицам. Смотровая площадка «Лавровая гора» — подъём несложный, виды великолепные.'
         }, {
             id: 'myshkin-arch',
@@ -745,7 +755,7 @@
             icon: '🏚️',
             title: 'Музей малых форм крестьянской архитектуры',
             sub: 'ул. Угличская, 21',
-            desc: 'Музей под открытым небом<br>Ремесленная слободка — мастер-классы<br><span class="highlight">15:00–16:00</span>',
+            desc: '🏚️ Музей под открытым небом<br>Ремесленная слободка — мастер-классы<br><span class="hours-label">🕘 10:00 – 18:00</span>',
             details: 'Коллекция деревянных построек: амбары, избы, мельницы. Можно зайти внутрь. В Ремесленной слободке — мастер-классы.'
         }, {
             id: 'rybinsk-embankment',
@@ -757,7 +767,7 @@
             icon: '🏞️',
             title: 'Волжская набережная',
             sub: 'Рыбинск',
-            desc: 'Прогулка, Пожарная каланча, Спасо-Преображенский собор<br><span class="highlight">10:00–12:30</span>',
+            desc: '🏞️ Прогулка, Пожарная каланча, Спасо-Преображенский собор<br><span class="hours-label">🕘 Круглосуточно</span>',
             details: 'Набережная — отличная отправная точка. Каланча (ул. Герцена, 2) и Собор (Соборная пл., 2) входят в прогулку.'
         }, {
             id: 'rybinsk-lunch',
@@ -767,9 +777,9 @@
             day: 4,
             color: '#3498db',
             icon: '🍴',
-            title: 'Обед в кафе «Волга»',
+            title: 'Кафе «Волга»',
             sub: 'пр. 50 лет Октября, 1',
-            desc: 'Бизнес-ланч ~400 ₽<br>Режим: 10:00 – 22:00<br><span class="highlight">12:30–13:30</span>',
+            desc: '🍴 Бизнес-ланч ~400 ₽<br><span class="hours-label">🕘 10:00 – 22:00</span>',
             details: 'Расположено на берегу Волги, панорамный вид.'
         }, {
             id: 'rybinsk-ges',
@@ -781,7 +791,7 @@
             icon: '⚡',
             title: 'Рыбинская ГЭС',
             sub: 'пос. ГЭС-14, ул. Вяземского, 31',
-            desc: 'Значимый инженерный объект, памятник Матери-Волге<br><span class="highlight">13:30–14:30</span>',
+            desc: '⚡ Значимый инженерный объект, памятник Матери-Волге<br><span class="hours-label">🕘 9:00 – 18:00</span>',
             details: 'Осмотр плотины, прилегающих территорий.'
         }, {
             id: 'gas-rybinsk',
@@ -793,7 +803,7 @@
             icon: '⛽',
             title: 'АЗС Роснефть (Рыбинск)',
             sub: 'ул. Гагарина, 30',
-            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            desc: '⛽ <span class="hours-label">Круглосуточно</span><br>Топливо: 98, 95, 92, ДТ',
             details: 'На выезде из Рыбинска в сторону Ярославля.'
         }, {
             id: 'tygydym',
@@ -805,23 +815,21 @@
             icon: '🏡',
             title: 'Деревня Тыгыдым',
             sub: 'Ярославская область',
-            desc: 'Аутентичная русская деревня XIX в.<br>Режим: сб–вс 11:00–18:00<br><span class="highlight">9:30–12:00</span>',
-            details: 'Деревянные дома, кузница, мельница. Экскурсии, мастер-классы. Взрослый билет 900 ₽, дети (4–10 лет) 750 ₽, до 4 лет бесплатно.'
+            desc: '🏡 Аутентичная русская деревня XIX в.<br><span class="hours-label">🕘 11:00 – 18:00</span><br>Взрослый билет 900 ₽, дети (4–10) 750 ₽, до 4 лет бесплатно',
+            details: 'Деревянные дома, кузница, мельница. Экскурсии, мастер-классы. Работает в сб–вс.'
         }, {
             id: 'vyatskoye',
             name: 'Село Вятское',
-            lat: 57.864766,   // ← ИСПРАВЛЕННЫЕ КООРДИНАТЫ (точка на трассе Р‑153)
+            lat: 57.864766,
             lng: 40.257889,
             day: 5,
             color: '#9b59b6',
             icon: '🏘️',
             title: 'Село Вятское',
             sub: 'Ярославская область',
-            desc: 'Музейный комплекс, дом купчихи Глинкой<br><span class="highlight">12:30–15:00</span>',
+            desc: '🏘️ Музейный комплекс, дом купчихи Глинкой<br><span class="hours-label">🕘 10:00 – 18:00</span>',
             details: 'Ночёвка в доме купчихи — 5500 ₽ с завтраком. Обед в местном кафе.'
         }, {
-
-            
             id: 'yaroslavl',
             name: 'Ярославль',
             lat: 57.6261,
@@ -831,7 +839,7 @@
             icon: '🏙️',
             title: 'Ярославль',
             sub: 'Центр города',
-            desc: 'Спасо-Преображенский монастырь, набережная, планетарий<br><span class="highlight">16:00–19:00</span>',
+            desc: '🏙️ Спасо-Преображенский монастырь, набережная, планетарий<br><span class="hours-label">🕘 Монастырь: 10:00–18:00</span><br>Набережная — круглосуточно',
             details: 'Спасо-Преображенский монастырь (Кремль), Стрелка, набережная, планетарий.'
         }, {
             id: 'gas-yaroslavl',
@@ -843,7 +851,7 @@
             icon: '⛽',
             title: 'АЗС Роснефть (Ярославль)',
             sub: 'Московский пр., 76',
-            desc: 'Круглосуточно<br>Топливо: 98, 95, 92, ДТ',
+            desc: '⛽ <span class="hours-label">Круглосуточно</span><br>Топливо: 98, 95, 92, ДТ',
             details: 'На въезде в Ярославль со стороны Рыбинска.'
         }, {
             id: 'uglich-myths',
@@ -855,39 +863,37 @@
             icon: '🧙',
             title: 'Музей мифов и суеверий русского народа',
             sub: 'ул. 9 Января, 40, Углич',
-            desc: 'По предварительной записи — 300 ₽<br>Режим: 12:00 – 17:00',
+            desc: '🧙 По предварительной записи — 300 ₽<br><span class="hours-label">🕘 12:00 – 17:00</span>',
             details: 'Дополнительное место при наличии времени и желания.'
         }];
 
         // ============================================================
-        //  ROUTE — waypoints in order (с исправленными координатами Вятского)
+        //  ROUTE — waypoints in order
         //  Москва → Мышкин → Рыбинск → Вятское → Ярославль → Москва
         // ============================================================
         const waypoints = [
-  L.latLng(55.7558, 37.6173),   // Москва
-  L.latLng(57.7833, 38.4500),   // Мышкин
-  L.latLng(58.0480, 38.8400),   // Рыбинск
-  L.latLng(57.864766, 40.257889), // ← село Вятское (исправлено)
-  L.latLng(57.6261, 39.8845),   // Ярославль
-  L.latLng(55.7558, 37.6173),   // Москва (возврат)
-];
+            L.latLng(55.7558, 37.6173), // Москва
+            L.latLng(57.7833, 38.4500), // Мышкин
+            L.latLng(58.0480, 38.8400), // Рыбинск
+            L.latLng(57.864766, 40.257889), // село Вятское
+            L.latLng(57.6261, 39.8845), // Ярославль
+            L.latLng(55.7558, 37.6173), // Москва (возврат)
+        ];
 
         // ============================================================
-        //  INIT MAP (без атрибуции)
+        //  INIT MAP
         // ============================================================
         const map = L.map('map', {
-        center: [57.2, 38.0],
-        zoom: 7,
-        zoomControl: false,
-        // attributionControl: true  // можно включить, а можно оставить false, если ставите свою подпись
-    });
+            center: [57.2, 38.0],
+            zoom: 7,
+            zoomControl: false,
+        });
 
-    // Самый надёжный вариант — через Fastly CDN
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains: 'abcd',
-    maxZoom: 19
-}).addTo(map);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>, &copy; <a href="https://carto.com/">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(map);
 
         // ============================================================
         //  CUSTOM ICONS
@@ -932,7 +938,7 @@
         });
 
         // ============================================================
-        //  ROUTING MACHINE (по дорогам) — ярко-красный маршрут
+        //  ROUTING MACHINE
         // ============================================================
         const routingControl = L.Routing.control({
             waypoints: waypoints,
@@ -1008,7 +1014,7 @@
         });
 
         // ============================================================
-        //  FIT MAP TO ALL MARKERS (после загрузки маршрута)
+        //  FIT MAP TO ALL MARKERS
         // ============================================================
         setTimeout(() => {
             const allBounds = L.latLngBounds(locations.map(l => [l.lat, l.lng]));
@@ -1026,7 +1032,7 @@
 
         console.log('🗺️ Маршрут обновлён: Москва → Мышкин → Рыбинск → Вятское → Ярославль → Москва');
         console.log('⛽ АЗС Роснефть на трассе: МКАД, Сергиев Посад, Переславль, Ростов, Углич, Рыбинск, Ярославль.');
-        console.log('🔹 Атрибуция Leaflet/OSM скрыта.');
+        console.log('🕘 Вместо времени посещения указаны часы работы каждого места.');
     </script>
 </body>
 </html>
